@@ -36,4 +36,7 @@ contains
       end if
     end do
   end subroutine bisection
+  ! subroutine calc()
+
+  ! end subroutine calc
 end module bisection_mod
