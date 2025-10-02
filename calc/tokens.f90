@@ -1,48 +1,149 @@
 module tokens
     implicit none
     private
-    public :: print_token
+    public :: tokenize
 
     type Token
-        character(len=8) :: kind ! 'DIGIT', 'IDENT', 'ADD', ...
+        character(len=8)  :: kind   ! 'DIGIT', 'IDENT', 'ADD', ...
+        character(len=16) :: lexeme ! '5.4', '^'
     end type Token
     
 contains
-    subroutine expressions(arr) result(exprs)
+    subroutine tokenize(arr, arr_token)
         use utils
         implicit none
         character(len=1), intent(in) :: arr(:)
-        character, allocatable :: expres(:,:)
-        integer :: i
+        character(len=32), allocatable :: temp(:,:)
+        character(len=32), allocatable, intent(out) :: arr_token(:,:)
+        integer :: i, n_tokens, start, j, k, func_len
         real ::  realnum
+        character(len=16) :: lex, remaining
+        character(len=5), parameter :: funcs(13) = &
+            ['sin  ', 'cos  ', 'tan  ', 'asin ', 'acos ', 'atan ', &
+             'sqrt ', 'log  ', 'ln   ', 'exp  ', 'abs  ', 'ceil ', 'floor']
+        logical :: found_func
 
-
-        do i = 1, size(arr)
+        allocate(arr_token(2, size(arr))) 
+        arr_token = '' 
+        
+        n_tokens = 1
+        i = 1
+        do while (i <= size(arr))
             select case (arr(i))
-                case('+')
-                    write(*,'(I3, 3X, A, 3X, A)') i, arr(i), "ADD"
+                case('+') 
+                    arr_token(1, n_tokens)  = arr(i)
+                    arr_token(2, n_tokens)  = "ADD"
+                    n_tokens = n_tokens + 1
+                    i = i + 1
                 case('-') 
-                    write(*,'(I3, 3X, A, 3X, A)') i, arr(i), "SUB"
+                    arr_token(1, n_tokens)  = arr(i)
+                    arr_token(2, n_tokens)  = "SUB"
+                    n_tokens = n_tokens + 1
+                    i = i + 1
                 case('*')
-                    write(*, '(I3, 3X, A, 3X, A)') i, arr(i), "MUL"
+                    arr_token(1, n_tokens)  = arr(i)
+                    arr_token(2, n_tokens)  = "MUL"
+                    n_tokens = n_tokens + 1
+                    i = i + 1
                 case('/')
-                    write(*, '(I3, 3X, A, 3X, A)') i, arr(i), "DIV"
-                case('.')
-                    write(*, '(I3, 3X, A, 3X, A)') i, arr(i), "DFLOAT"
+                    arr_token(1, n_tokens)  = arr(i)
+                    arr_token(2, n_tokens)  = "DIV"
+                    n_tokens = n_tokens + 1
+                    i = i + 1
                 case('^')
-                    write(*, '(I3, 3X, A, 3X, A)') i, arr(i), "POW"
+                    arr_token(1, n_tokens)  = arr(i)
+                    arr_token(2, n_tokens)  = "POW"
+                    n_tokens = n_tokens + 1
+                    i = i + 1
                 case('(')
-                    write(*, '(I3, 3X, A, 3X, A)') i, arr(i), "LPAREN"
+                    arr_token(1, n_tokens)  = arr(i)
+                    arr_token(2, n_tokens)  = "LPAREN"
+                    n_tokens = n_tokens + 1
+                    i = i + 1
                 case(')')
-                    write(*, '(I3, 3X, A, 3X, A)') i, arr(i), "RPAREN"
+                    arr_token(1, n_tokens)  = arr(i)
+                    arr_token(2, n_tokens)  = "RPAREN"
+                    n_tokens = n_tokens + 1
+                    i = i + 1
 
                 case default
-                    if (is_numeric(arr(i))) then
-                        write(*, '(I3, 3X, A, 3X, A)') i, arr(i), "NUMBER"
-                    else
-                        write(*, '(I3, 3X, A, 3X, A)') i, arr(i), "IDENT"
+                    if (is_numeric(arr(i)) .or. arr(i) == '.') then
+                        start = i
+                        j = i
+                        do while (j <= size(arr) .and. (is_numeric(arr(j)) .or. arr(j) == '.'))
+                            j = j + 1
+                        end do
+                        lex = ''
+                        do while (start < j)
+                            lex = trim(lex) // arr(start)
+                            start = start + 1
+                        end do
+                        arr_token(1, n_tokens) = lex
+                        arr_token(2, n_tokens) = "NUMERIC"
+                        n_tokens = n_tokens + 1
+                        i = j
+                    else 
+                        ! EXAMPLE
+                        ! input: sinx
+                        ! token: FUNC(sin), IDENT(x)
+                        start = i
+                        j = i
+                        do while (j <= size(arr) .and. .not. is_numeric(arr(j)) .and. &
+                                  arr(j) /= '+' .and. arr(j) /= '-' .and. arr(j) /= '*' .and. &
+                                  arr(j) /= '/' .and. arr(j) /= '^' .and. arr(j) /= '(' .and. &
+                                  arr(j) /= ')' .and. arr(j) /= '.')
+                            j = j + 1
+                        end do
+                        lex = ''
+                        do while (start < j)
+                            lex = trim(lex) // arr(start)
+                            start = start + 1
+                        end do
+
+                        found_func = .false.
+
+                        do k = 1, size(funcs)
+                            func_len = len_trim(funcs(k))
+                            if (len_trim(lex) >= func_len) then
+                                if (lex(1:func_len) == trim(funcs(k))) then
+                                    ! Found a function at the beginning
+                                    arr_token(1, n_tokens) = trim(funcs(k))
+                                    arr_token(2, n_tokens) = "FUNC"
+                                    n_tokens = n_tokens + 1
+                                    found_func = .true.
+                                    
+                                    ! Check if there's remaining text after function
+                                    if (len_trim(lex) > func_len) then
+                                        remaining = lex(func_len+1:)
+                                        arr_token(1, n_tokens) = trim(remaining)
+                                        arr_token(2, n_tokens) = "IDENT"
+                                        n_tokens = n_tokens + 1
+                                    end if
+                                    exit
+                                end if
+                            end if
+                        end do
+                        
+                        ! If no function found, its just an identifier
+                        if (.not. found_func) then
+                            arr_token(1, n_tokens) = lex
+                            arr_token(2, n_tokens) = "IDENT"
+                            n_tokens = n_tokens + 1
+                        end if
+                        
+                        i = j
                     end if
             end select
         end do
-    end subroutine expressions
+        
+        allocate(temp(2, n_tokens-1))
+        temp(:,:) = arr_token(:,1:n_tokens-1)
+        deallocate(arr_token)
+        call move_alloc(from=temp, to=arr_token)
+
+        write(*,*) 'Index  Lexeme   Kind'
+        do i = 1, n_tokens - 1
+            write(*,'(I4,7X,A,7X,A)') i, trim(arr_token(1,i)), trim(arr_token(2,i))
+        end do
+    end subroutine tokenize
 end module tokens

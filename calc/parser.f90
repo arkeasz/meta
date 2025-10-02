@@ -1,4 +1,17 @@
 module class_parser
+    ! Input: 4x  + 3
+    ! Note: 4x has an implicit multiplication
+    ! Tokens:  
+    !  -  4 (NUMERIC)
+    !  -  x (IDENTIFIER)
+    !  -  + (ADD)
+    !  -  3 (NUMERIC)
+    ! so the parser build:
+    !         +
+    !        / \
+    !       *  3
+    !      / \
+    !     4  x
     implicit none
     private
     public :: Parser, print_eq, new_parser, tokenizer
@@ -32,14 +45,13 @@ contains
         implicit none
         type(Parser), intent(in) :: this
         integer :: i
-        character, allocatable :: arr(:)
+        character, allocatable :: arr(:), arr_token(:,:)
 
         arr = string_to_array(this%equation, ' ')
 
         print *, arr
 
-        call print_token(arr)
-
-    end subroutine
+        call tokenize(arr, arr_token)
+    end subroutine tokenizer
 end module class_parser
 
