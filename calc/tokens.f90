@@ -136,6 +136,7 @@ contains
             end select
         end do
         
+        ! allocate the temporal array
         allocate(temp(2, n_tokens-1))
         temp(:,:) = arr_token(:,1:n_tokens-1)
         deallocate(arr_token)

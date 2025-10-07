@@ -18,6 +18,7 @@ module class_parser
 
     type Parser
         character(:), allocatable :: equation
+        character, allocatable :: tok(:,:)
     end type Parser
  
 contains
@@ -43,15 +44,26 @@ contains
         use utils
         use tokens
         implicit none
-        type(Parser), intent(in) :: this
+        type(Parser), intent(inout) :: this
         integer :: i
-        character, allocatable :: arr(:), arr_token(:,:)
+        character, allocatable :: arr(:)
+        character(len= 32), allocatable ::arr_token(:,:)
+
 
         arr = string_to_array(this%equation, ' ')
 
-        print *, arr
-
         call tokenize(arr, arr_token)
+        this%tok = arr_token
     end subroutine tokenizer
+
+    ! unary operators acts on one operand, while a binary operator acts on two operands
+    ! Parentheses thave precedence over all operators
+    ! ^ (exponentiation) has precedence over unary - and the binary operators "/, *, - and +"
+    ! * and / have precedence over unary - and binary - and +
+    ! unary - has precedence over binary - and +
+    ! ^ is right associative while all other binary operators are left associative.
+    function parse(tokens)
+
+    end function parse
 end module class_parser
 
