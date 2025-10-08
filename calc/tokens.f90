@@ -141,10 +141,5 @@ contains
         temp(:,:) = arr_token(:,1:n_tokens-1)
         deallocate(arr_token)
         call move_alloc(from=temp, to=arr_token)
-
-        write(*,*) 'Index  Lexeme   Kind'
-        do i = 1, n_tokens - 1
-            write(*,'(I4,7X,A,7X,A)') i, trim(arr_token(1,i)), trim(arr_token(2,i))
-        end do
     end subroutine tokenize
 end module tokens

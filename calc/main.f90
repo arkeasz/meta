@@ -1,9 +1,10 @@
 program calculator
     use class_parser
+    use ast
     implicit none
     
     type(Parser) :: p
-
+    type(ASTNode), pointer :: root
     ! p = new_parser("x^2 + 3*x - 5 + 2sin4y")
     ! call tokenizer(p)
     ! p = new_parser("0.5x^2 + 3*x - 5 + sin(x)")
@@ -14,6 +15,7 @@ program calculator
     ! first only numbers
     p = new_parser("4+3*5^2+6")
     call tokenizer(p)
+    call parse(p%tok, root, p)
 
-    print *, p%tok
+
 end program calculator

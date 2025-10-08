@@ -14,11 +14,13 @@ module class_parser
     !     4  x
     implicit none
     private
-    public :: Parser, print_eq, new_parser, tokenizer
+    public :: Parser, print_eq, new_parser, tokenizer, parse
 
     type Parser
         character(:), allocatable :: equation
         character, allocatable :: tok(:,:)
+        integer :: pos   = 1
+        integer :: ntoks = 0
     end type Parser
  
 contains
@@ -43,6 +45,7 @@ contains
     subroutine tokenizer(this)
         use utils
         use tokens
+        use ast
         implicit none
         type(Parser), intent(inout) :: this
         integer :: i
@@ -54,6 +57,8 @@ contains
 
         call tokenize(arr, arr_token)
         this%tok = arr_token
+        this%ntokens = size(arr_token, 2)
+        this%pos = 1
     end subroutine tokenizer
 
     ! unary operators acts on one operand, while a binary operator acts on two operands
@@ -62,8 +67,20 @@ contains
     ! * and / have precedence over unary - and binary - and +
     ! unary - has precedence over binary - and +
     ! ^ is right associative while all other binary operators are left associative.
-    function parse(tokens)
+    subroutine parse(tokens, root, p)
+        use ast
+        implicit none
+        ! wherea
+        ! tok(1,i) = lexemes
+        ! tok(2,i) = kind
+        character, intent(in) :: tokens(:,:) 
 
-    end function parse
+        ! the main value
+        type(Parser)
+        type(ASTNode), pointer, intent(out):: root
+        
+        root => parse_E(p)
+
+    end subroutine parse
 end module class_parser
 
