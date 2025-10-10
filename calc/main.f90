@@ -15,7 +15,11 @@ program calculator
     ! first only numbers
     p = new_parser("4+3*5^2+6")
     call tokenizer(p)
-    call parse(p%tok, root, p)
-
+    call parse(root, p)
+    if (associated(root)) then
+        call print_tree(root)
+    else
+        print *, 'No AST produced (root is null).'
+    end if
 
 end program calculator

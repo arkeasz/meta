@@ -16,7 +16,6 @@ contains
         character(len=32), allocatable :: temp(:,:)
         character(len=32), allocatable, intent(out) :: arr_token(:,:)
         integer :: i, n_tokens, start, j, k, func_len
-        real ::  realnum
         character(len=16) :: lex, remaining
         character(len=5), parameter :: funcs(13) = &
             ['sin  ', 'cos  ', 'tan  ', 'asin ', 'acos ', 'atan ', &
