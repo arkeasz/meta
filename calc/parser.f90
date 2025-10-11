@@ -49,12 +49,12 @@ contains
         implicit none
         type(Parser), intent(inout) :: this
         character, allocatable :: arr(:)
-        character(len= 32), allocatable ::arr_token(:,:)
-
+        character(len=32), allocatable ::arr_token(:,:)
+        integer :: ntoks
 
         arr = string_to_array(this%equation, ' ')
 
-        call tokenize(arr, arr_token)
+        call tokenize(arr, arr_token, ntoks)
         ! output of tokenize when the input will 4+3*5^2+6.5
         !  Index  Lexeme   Kind
         !    1       4       N
@@ -67,7 +67,7 @@ contains
         !    8       +       A
         !    9     6.5       N
         this%tok = arr_token
-        this%ntoks = size(arr_token, 2)
+        this%ntoks = ntoks - 1
         this%pos = 1
     end subroutine tokenizer
 
@@ -189,6 +189,23 @@ contains
         else if (kind == "IDENT") then
             node => make_ident(lexem)
             call advance(p)
+        else if (kind == "FUNC") then
+            call advance(p)
+            if (trim(get_kind(p)) /= "LPAREN") then
+                print *, "Error: expected '(' after function name at pos=", p%pos
+                nullify(node)
+                return
+            end if
+
+            call advance(p)
+            node => parse_E(p)
+            if (trim(get_kind(p)) /= "RPAREN") then
+                print *, "Error: expected ')' after function argument at pos=", p%pos
+            else
+                call advance(p)
+            end if
+
+            node => make_func(lexem, node)
         else if (kind == "LPAREN") then
             call advance(p)
             node => parse_E(p)

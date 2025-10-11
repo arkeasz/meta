@@ -9,13 +9,14 @@ module tokens
     end type Token
     
 contains
-    subroutine tokenize(arr, arr_token)
+    subroutine tokenize(arr, arr_token, ntoks)
         use utils
         implicit none
         character(len=1), intent(in) :: arr(:)
         character(len=32), allocatable :: temp(:,:)
         character(len=32), allocatable, intent(out) :: arr_token(:,:)
         integer :: i, n_tokens, start, j, k, func_len
+        integer, intent(inout) :: ntoks
         character(len=16) :: lex, remaining
         character(len=5), parameter :: funcs(13) = &
             ['sin  ', 'cos  ', 'tan  ', 'asin ', 'acos ', 'atan ', &
@@ -140,5 +141,48 @@ contains
         temp(:,:) = arr_token(:,1:n_tokens-1)
         deallocate(arr_token)
         call move_alloc(from=temp, to=arr_token)
+        allocate(temp(2, 2*n_tokens))
+        i = 1
+        n_tokens = 1
+        ! GENERAL RULE
+        ! NUMERIC followed by IDENT, FUNC, or LPAREN
+        ! IDENT or RPAREN followed by IDENT, NUMERIC, FUNC or LPAREN
+        ! -> insert MUL
+        do while (i <= size(arr_token, 2))
+            temp(2,n_tokens) = arr_token(2,i)
+            temp(1,n_tokens) = arr_token(1,i)
+            n_tokens = n_tokens + 1
+            if (i == size(arr_token, 2)) then
+                exit
+            end if
+
+            if (arr_token(2,i) == "NUMERIC") then
+                if (arr_token(2,i+1) == "IDENT" .or. arr_token(2,i+1) == "FUNC" .or. arr_token(2,i+1) == "LPAREN" ) then
+                    temp(2,n_tokens) = "MUL"
+                    temp(1,n_tokens) = "*"
+                    n_tokens = n_tokens + 1
+                end if
+            end if
+
+            if (arr_token(2,i) == "IDENT" .or. arr_token(2,i) == "RPAREN") then
+                if (arr_token(2,i+1) == "IDENT" .or. arr_token(2,i+1) == "NUMERIC" .or. arr_token(2,i+1) == "LPAREN" .or. arr_token(2,i+1) == "FUNC") then
+                    temp(2,n_tokens) = "MUL"
+                    temp(1,n_tokens) = "*"
+                    n_tokens = n_tokens + 1
+                end if
+            end if
+            i = i + 1
+        end do
+
+        deallocate(arr_token)
+        call move_alloc(from=temp, to=arr_token)
+        ntoks = n_tokens
+        ! to print the lexems and kinds
+        ! i = 1
+        ! do while (i <= size(arr_token, 2))
+        !     write(*,'(A16,2X,A16)') trim(arr_token(1,i)), trim(arr_token(2,i))
+        !     i = i + 1
+        ! end do 
+
     end subroutine tokenize
 end module tokens
