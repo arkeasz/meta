@@ -1,7 +1,7 @@
 module ast
   implicit none
   private
-  public :: ASTNode, NODE_NUM, NODE_IDENT, NODE_OP
+  public :: ASTNode, NODE_NUM, NODE_IDENT, NODE_OP, NODE_FUNC
   public :: make_num, make_ident, make_func, make_binop, make_unop, print_tree
 
   integer, parameter :: NODE_NUM   = 0
@@ -30,7 +30,7 @@ contains
     n%left => arg
     n%right => null()
 
-    t = adjustl(func_name)
+    t = adjustl(func_name) ! sin, cos, atan
     allocate(character(len=len_trim(t)) :: n%op)
     n%op = trim(t)
   end function make_func

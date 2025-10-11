@@ -70,8 +70,12 @@ contains
                     if (is_numeric(arr(i)) .or. arr(i) == '.') then
                         start = i
                         j = i
-                        do while (j <= size(arr) .and. (is_numeric(arr(j)) .or. arr(j) == '.'))
-                            j = j + 1
+                        do while (j <= size(arr))
+                            if (is_numeric(arr(j)) .or. arr(j) == '.') then
+                                j = j + 1
+                            else 
+                                exit
+                            end if
                         end do
                         lex = ''
                         do while (start < j)
@@ -178,11 +182,11 @@ contains
         call move_alloc(from=temp, to=arr_token)
         ntoks = n_tokens
         ! to print the lexems and kinds
-        ! i = 1
-        ! do while (i <= size(arr_token, 2))
-        !     write(*,'(A16,2X,A16)') trim(arr_token(1,i)), trim(arr_token(2,i))
-        !     i = i + 1
-        ! end do 
+        i = 1
+        do while (i <= n_tokens)
+            write(*,'(A16, 2X, A16,2X,A16)') trim(arr_token(1,i)), trim(arr_token(2,i))
+            i = i + 1
+        end do 
 
     end subroutine tokenize
 end module tokens
