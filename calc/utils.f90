@@ -53,11 +53,4 @@ contains
             bool = .true.
         end if
     end function is_numeric
-
-    ! function string_to_number(str) result(num)
-    !     implicit none
-    !     character(len=*), intent(in) :: str
-    !     real :: num
-    !     read(str, *) num
-    ! end function string_to_number
 end module utils

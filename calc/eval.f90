@@ -1,5 +1,6 @@
 module evaluator
     use ast
+    use math
     use, intrinsic :: iso_fortran_env, only : dw => real64
     use, intrinsic :: ieee_arithmetic
     implicit none
@@ -7,6 +8,12 @@ module evaluator
     public :: eval
 contains
   recursive function eval(node) result(val)
+    implicit none
+
+    ! COMMON CONSTANTS
+    real, parameter :: PI = 4.0*atan(1.0)
+    real(dw), parameter :: E = exp(1.0_dw)
+
     type(ASTNode), pointer, intent(in), optional :: node
     logical :: is_nan_value
     ! the value of the indentifier, SOON THE SYMTAB FOR HARD CALCULUS
@@ -31,8 +38,14 @@ contains
         case (NODE_NUM)
             val = node%nval
         case (NODE_IDENT)
+            if (node%name == "pi") then
+                val = PI
+            else if (node%name == "e") then 
+                val = E
+            else 
+                val = 0.0_dw
+            end if
             ! if the memory is actually asigned in the memory
-            val = 0.0_dw
         case (NODE_OP) ! (op, left, right)
             ! the left eval
             if (associated(node%left)) then 
@@ -80,6 +93,8 @@ contains
                         val = sin(arg)
                     case("cos")
                         val = cos(arg)
+                    case("fact")
+                        val = factorial(arg)
                     case("tan")
                         val = tan(arg)
                     case("asin")

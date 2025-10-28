@@ -9,7 +9,7 @@ program calculator
     type(Parser) :: p
     type(ASTNode), pointer :: root
 
-    eq = "4x + 3x^2"
+    eq = "fact(0)"
     p = new_parser(eq)
     call tokenizer(p)
     call parse(root, p)
@@ -18,7 +18,7 @@ program calculator
         result = eval(root)
         print *, "Equation: ", eq
         print *, 'Result =', result
-        ! call print_tree(root)
+        call print_tree(root)
     else
         print *, 'No AST produced (root is null).'
     end if

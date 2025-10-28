@@ -18,9 +18,10 @@ contains
         integer :: i, n_tokens, start, j, k, func_len
         integer, intent(inout) :: ntoks
         character(len=16) :: lex, remaining
-        character(len=5), parameter :: funcs(13) = &
+        ! each function name has a length of 5
+        character(len=5), parameter :: funcs(14) =  &
             ['sin  ', 'cos  ', 'tan  ', 'asin ', 'acos ', 'atan ', &
-             'sqrt ', 'log  ', 'ln   ', 'exp  ', 'abs  ', 'ceil ', 'floor']
+            'sqrt ', 'log  ', 'ln   ', 'exp  ', 'abs  ', 'ceil ', 'floor', 'fact ']
         logical :: found_func
 
         allocate(arr_token(2, size(arr))) 
