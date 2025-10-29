@@ -2,6 +2,7 @@ program calculator
     use class_parser
     use ast
     use evaluator
+    use symtab
     use, intrinsic :: iso_fortran_env, only: dw => real64
     implicit none
     real(kind=dw) :: result
@@ -11,9 +12,11 @@ program calculator
 
     eq = "fact(0)"
     p = new_parser(eq)
+    v = new_symtab()
     call tokenizer(p)
     call parse(root, p)
-
+    
+    call add_ident(v, 'x', 4.5_dw)
     if (associated(root)) then
         result = eval(root)
         print *, "Equation: ", eq
