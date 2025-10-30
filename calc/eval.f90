@@ -1,18 +1,20 @@
 module evaluator
     use ast
     use math
+    use symtab
     use, intrinsic :: iso_fortran_env, only : dw => real64
     use, intrinsic :: ieee_arithmetic
     implicit none
     private
     public :: eval
 contains
-  recursive function eval(node) result(val)
+  recursive function eval(node, v) result(val)
     implicit none
 
     ! COMMON CONSTANTS
     real, parameter :: PI = 4.0*atan(1.0)
     real(dw), parameter :: E = exp(1.0_dw)
+    type(Vars), intent(in) :: v
 
     type(ASTNode), pointer, intent(in), optional :: node
     logical :: is_nan_value
@@ -43,20 +45,22 @@ contains
             else if (node%name == "e") then 
                 val = E
             else 
-                val = 0.0_dw
+                val = symtab_lookup(v, node%name)
+                print*, node%name
+                print*, symtab_lookup(v, node%name)
             end if
             ! if the memory is actually asigned in the memory
         case (NODE_OP) ! (op, left, right)
             ! the left eval
             if (associated(node%left)) then 
-                lval = eval(node%left)
+                lval = eval(node%left, v)
             else
                 lval = 0.0_dw
             end if
             
             ! the right eval
             if (associated(node%right)) then 
-                rval = eval(node%right)
+                rval = eval(node%right, v)
             else
                 rval = 0.0_dw
             end if
@@ -87,7 +91,7 @@ contains
 
         case (NODE_FUNC) ! (name_func, left, null) only two args
             if (associated(node%left)) then 
-                arg = eval(node%left) ! node%left maybe an expression
+                arg = eval(node%left, v) ! node%left maybe an expression
                 select case(trim(node%op))
                     case("sin")
                         val = sin(arg)

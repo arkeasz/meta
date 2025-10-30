@@ -9,19 +9,21 @@ program calculator
     character(len=32) :: eq
     type(Parser) :: p
     type(ASTNode), pointer :: root
+    type(Vars), pointer :: v 
 
-    eq = "fact(0)"
+    eq = "4x + 89y"
     p = new_parser(eq)
-    v = new_symtab()
+    v => new_symtab()
     call tokenizer(p)
     call parse(root, p)
-    
-    call add_ident(v, 'x', 4.5_dw)
+    call symtab_add(v, 'y', 1.0_dw)
+    call symtab_add(v, 'x', 4.5_dw)
     if (associated(root)) then
-        result = eval(root)
+        result = eval(root, v)
         print *, "Equation: ", eq
         print *, 'Result =', result
-        call print_tree(root)
+        call symtab_print(v)
+        ! call print_tree(root)
     else
         print *, 'No AST produced (root is null).'
     end if
