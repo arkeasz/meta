@@ -7,5 +7,6 @@
         "**/Thumbs.db": true,
         "**/*.mod": true,
         "**/*.exe": true,
+        // "**/calc": true,
     }
 }

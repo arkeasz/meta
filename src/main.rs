@@ -19,7 +19,6 @@ struct BisectionInput {
 
 #[get("/")]
 fn index() -> Template {
-    // Template::render("index", HashMap::<String, f64>::new())
     Template::render("index", HashMap::<String, f64>::new())
 }
 
@@ -38,13 +37,21 @@ fn calculate(input: Form<BisectionInput>, calc: &rocket::State<MetaLib>) -> Temp
         Template::render("index", &ctx)
     }
 }
+
+
+#[get("/")]
+fn docs() -> Template {
+    Template::render("docs", HashMap::<String, f64>::new())
+
+}
+
 #[get("/<post>")]
 fn posts(post: String) -> Template {
     let file_path = format!("./docs/{}.md", post);
     let contents = fs::read_to_string(file_path).unwrap();
     let mut ctx = HashMap::new();
     ctx.insert("contents", contents);
-    Template::render("docs", &ctx)
+    Template::render("post", &ctx)
 }
 
 
@@ -56,6 +63,6 @@ fn rocket() -> _ {
     rocket::build()
         .manage(MetaLib { lib: Mutex::new(lib) })
         .mount("/", routes![index, calculate])
-        .mount("/docs", routes![posts])
+        .mount("/docs", routes![docs, posts])
         .attach(Template::fairing())
 }

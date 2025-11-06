@@ -9,10 +9,10 @@
     <header>
         <h1>MANO</h1>
         <nav>
-            <a href="">Home</a>
-            <a href="">Docs</a>
-            <a href="">Donate</a>
-            <a href="">Github</a>
+            <a href="/">Home</a>
+            <a href="/docs">Docs</a>
+            <a href="/paypal">Donate</a>
+            <a href="https://github.com/arkeasz/meta">Github</a>
         </nav>
     </header>
     {{ contents }}
