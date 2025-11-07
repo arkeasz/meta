@@ -6,15 +6,15 @@ use std::collections::HashMap;
 use std::sync::Mutex;
 use std::fs;
 use libloading::{Library, Symbol};
-
+use std::ffi::CString;
 struct MetaLib {
-    lib: Mutex<Library>
+    calclib: Mutex<Library>
 }
 
-#[derive(FromForm)]
-struct BisectionInput {
-    a: f64,
-    b: f64,
+#[derive(FromForm, Debug)]
+struct CalculatorInput {
+    equation: String,
+    variables: String,
 }
 
 #[get("/")]
@@ -23,21 +23,26 @@ fn index() -> Template {
 }
 
 #[post("/", data = "<input>")]
-fn calculate(input: Form<BisectionInput>, calc: &rocket::State<MetaLib>) -> Template {
-    let lib = calc.lib.lock().unwrap();
+fn calculate(input: Form<CalculatorInput>, calc: &rocket::State<MetaLib>) -> Template {
+    let lib = calc.calclib.lock().unwrap();
     unsafe {
-        let bisection: Symbol<unsafe extern "C" fn(f64, f64, f64, *mut f64)> =
-            lib.get(b"bisection\0").unwrap();
-        let mut root = 0.0;
+        let calculator: Symbol<unsafe extern "C" fn(*const i8, *const i8, *mut f64)> =
+            lib.get(b"calculator\0").expect("No se encontró la función calculator en la DLL");
 
-        bisection(input.a, input.b, 1e-6, &mut root as *mut f64);
+        let eq_c = CString::new(input.equation.clone()).unwrap();
+        let vars_c = CString::new(input.variables.clone()).unwrap();
+        let mut result: f64 = 0.0;
+
+        calculator(eq_c.as_ptr(), vars_c.as_ptr(), &mut result as *mut f64);
+
         let mut ctx = HashMap::new();
-        ctx.insert("root", root);
+        ctx.insert("equation".to_string(), input.equation.clone());
+        ctx.insert("variables".to_string(), input.variables.clone());
+        ctx.insert("result".to_string(), format!("{}", result));
 
         Template::render("index", &ctx)
     }
 }
-
 
 #[get("/")]
 fn docs() -> Template {
@@ -54,14 +59,14 @@ fn posts(post: String) -> Template {
     Template::render("post", &ctx)
 }
 
-
 #[launch]
 fn rocket() -> _ {
-    let lib = unsafe {
-        Library::new("./functions/libcalculos.dll").expect("DLL load failed")
+    let calclib = unsafe {
+        Library::new("./math/libmath.dll").expect("DLL load failed")
     };
+
     rocket::build()
-        .manage(MetaLib { lib: Mutex::new(lib) })
+        .manage(MetaLib { calclib: Mutex::new(calclib) })
         .mount("/", routes![index, calculate])
         .mount("/docs", routes![docs, posts])
         .attach(Template::fairing())
