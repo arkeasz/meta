@@ -6,37 +6,45 @@ module utils
 contains
     function string_to_array(str, sep) result(arr)
         implicit none
-        character(len=*), intent(in) ::  str
+        character(len=*), intent(in) :: str
         character(len=*), intent(in) :: sep
-        character, allocatable       :: arr(:)
-        integer :: i, idx, real_len
-        character(len=1) :: char   
+        character(len=:), allocatable :: arr(:)
+        integer :: i, start, len_str, n
+        character(len=:), allocatable :: temp
 
-        if (len(str) <= 0) then
-            allocate(arr(0))
-            return
+        len_str = len_trim(str)
+        temp = trim(str)
+
+        if (len_trim(sep) == 0) then
+            allocate(character(len=1) :: arr(len_str))
+            do i = 1, len_str
+                arr(i) = temp(i:i)
+            end do
+            return 
         end if
-        
-        real_len = 0
-        do i = 1, len(str)
-            char = str(i:i)
-            if (char /= sep) then 
-                real_len = real_len + 1
+
+        n = 1
+        do i = 1, len_str
+            if (temp(i:i) == sep) n = n + 1
+        end do
+        allocate(character(len=len_str) :: arr(n))
+
+        start = 1
+        n = 0
+        do i = 1, len_str
+            if (temp(i:i) == sep) then
+                n = n + 1
+                arr(n) = adjustl(trim(temp(start:i-1)))
+                start = i + 1
+            elseif (i == len_str) then
+                n = n + 1
+                arr(n) = adjustl(trim(temp(start:i)))
             end if
         end do
-        
-        allocate(arr(real_len))
 
-        idx =  1
-        do i = 1, len(str)
-            char = str(i:i)
-            if (char /= sep) then
-                arr(idx) = str(i:i)
-                idx = idx + 1
-            end if 
-        end do
-
+        if (n < size(arr)) arr = arr(1:n)
     end function string_to_array
+
 
     function is_numeric(str) result(bool)
         implicit none
@@ -53,4 +61,5 @@ contains
             bool = .true.
         end if
     end function is_numeric
+
 end module utils

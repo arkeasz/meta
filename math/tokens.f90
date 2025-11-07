@@ -1,12 +1,11 @@
 module tokens
-    use iso_c_binding
     implicit none
     private
     public :: tokenize
 
-    type, bind(c) Token
-        character(kind=c_char)  :: kind(8)   ! 'DIGIT', 'IDENT', 'ADD', ...
-        character(kind=c_char) :: lexeme(16) ! '5.4', '^'
+    type Token
+        character(len=8)  :: kind   ! 'DIGIT', 'IDENT', 'ADD', ...
+        character(len=16) :: lexeme ! '5.4', '^'
     end type Token
     
 contains
@@ -14,8 +13,8 @@ contains
         use utils
         implicit none
         character(len=1), intent(in) :: arr(:)
-        character(len=32), allocatable :: temp(:,:)
-        character(len=32), allocatable, intent(out) :: arr_token(:,:)
+        character(len=1024), allocatable :: temp(:,:)
+        character(len=1024), allocatable, intent(out) :: arr_token(:,:)
         integer :: i, n_tokens, start, j, k, func_len
         integer, intent(inout) :: ntoks
         character(len=16) :: lex, remaining

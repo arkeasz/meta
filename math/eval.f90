@@ -1,5 +1,4 @@
 module evaluator
-    use iso_c_binding
     use ast
     use math
     use symtab
@@ -47,8 +46,6 @@ contains
                 val = E
             else 
                 val = symtab_lookup(v, node%name)
-                print*, node%name
-                print*, symtab_lookup(v, node%name)
             end if
             ! if the memory is actually asigned in the memory
         case (NODE_OP) ! (op, left, right)

@@ -18,7 +18,7 @@ module class_parser
 
     type Parser
         character(:), allocatable :: equation
-        character(len=32), allocatable :: tok(:,:)
+        character(len=1024), allocatable :: tok(:,:)
         integer :: pos   = 1
         integer :: ntoks = 0
     end type Parser
@@ -49,10 +49,10 @@ contains
         implicit none
         type(Parser), intent(inout) :: this
         character, allocatable :: arr(:)
-        character(len=32), allocatable ::arr_token(:,:)
+        character(len=1024), allocatable ::arr_token(:,:)
         integer :: ntoks
 
-        arr = string_to_array(this%equation, ' ')
+        arr = string_to_array(this%equation, '')
 
         call tokenize(arr, arr_token, ntoks)
         ! output of tokenize when the input will 4+3*5^2+6.5
