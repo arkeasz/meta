@@ -15,18 +15,17 @@ subroutine calcu(eq, variables, result) bind(C, name="calculator")
     do while (eq(n_eq+1) /= c_null_char)
         n_eq = n_eq + 1
         if (n_eq > 1000) then
-            print *, "Error: cadena eq sin terminador nulo"
+            print *, "Error: eq string not end up"
             return
         end if
     end do
     print *, "eq length detected:", n_eq
 
-    ! longitud de variables
     n_vars = 0
     do while (variables(n_vars+1) /= c_null_char)
         n_vars = n_vars + 1
         if (n_vars > 1000) then
-            print *, "Error: cadena variables sin terminador nulo"
+            print *, "Error: var string not end up"
             return
         end if
     end do

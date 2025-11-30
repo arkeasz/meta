@@ -1,6 +1,7 @@
 module evaluator
     use ast
     use math
+    use utils
     use symtab
     use, intrinsic :: iso_fortran_env, only : dw => real64
     use, intrinsic :: ieee_arithmetic
@@ -78,8 +79,12 @@ contains
                     else 
                         val = lval/rval
                     end if
-                case("^")
-                    val = lval**rval
+                case("^") ! if ^(0.333) -> a^(b) and we use numerical methods if a < 0
+                    if ((rval > 0.0_dw .and. rval < 1.0_dw) .and. .not. is_even(rval)) then
+                        val = sgn(lval)*(abs(lval))**rval
+                    else 
+                        val = lval**rval
+                    end if
                 case("neg")
                     val = -lval
                 case default
@@ -105,6 +110,14 @@ contains
                         val = acos(arg)
                     case("atan")
                         val = atan(arg)
+                    case("sign")
+                        if (arg > 0) then
+                            val = 1
+                        else if (arg < 0) then 
+                            val = -1
+                        else 
+                            val = 0
+                        end if
                     case("sqrt")
                         if (arg < 0.0_dw) then
                             print *, "negative value?"

@@ -3,6 +3,10 @@ module tokens
     private
     public :: tokenize
 
+    ! reset color
+    character(len=1), parameter :: esc = achar(27)
+
+
     type Token
         character(len=8)  :: kind   ! 'DIGIT', 'IDENT', 'ADD', ...
         character(len=16) :: lexeme ! '5.4', '^'
@@ -11,17 +15,18 @@ module tokens
 contains
     subroutine tokenize(arr, arr_token, ntoks)
         use utils
+        use ansi_colors
         implicit none
         character(len=1), intent(in) :: arr(:)
         character(len=1024), allocatable :: temp(:,:)
         character(len=1024), allocatable, intent(out) :: arr_token(:,:)
         integer :: i, n_tokens, start, j, k, func_len
         integer, intent(inout) :: ntoks
-        character(len=16) :: lex, remaining
+        character(len=32) :: lex, remaining, numm
         ! each function name has a length of 5
-        character(len=5), parameter :: funcs(14) =  &
+        character(len=5), parameter :: funcs(15) =  &
             ['sin  ', 'cos  ', 'tan  ', 'asin ', 'acos ', 'atan ', &
-            'sqrt ', 'log  ', 'ln   ', 'exp  ', 'abs  ', 'ceil ', 'floor', 'fact ']
+            'sqrt ', 'log  ', 'ln   ', 'exp  ', 'abs  ', 'ceil ', 'floor', 'fact ', 'sign ']
         logical :: found_func
 
         allocate(arr_token(2, size(arr))) 
@@ -71,19 +76,20 @@ contains
                     if (is_numeric(arr(i)) .or. arr(i) == '.') then
                         start = i
                         j = i
+                        numm = ''
+
                         do while (j <= size(arr))
-                            if (is_numeric(arr(j)) .or. arr(j) == '.') then
+                            if (is_numeric(trim(trim(numm)//trim(arr(j)))) .or. arr(j) == '.') then
+                                numm = trim(trim(numm) // trim(arr(j)))
                                 j = j + 1
+                                print *, "candidate number: ", numm
                             else 
+                                print *, "this is the final number: ", numm
+                                print *, "saliendo"
                                 exit
                             end if
                         end do
-                        lex = ''
-                        do while (start < j)
-                            lex = trim(lex) // arr(start)
-                            start = start + 1
-                        end do
-                        arr_token(1, n_tokens) = lex
+                        arr_token(1, n_tokens) = numm
                         arr_token(2, n_tokens) = "NUMERIC"
                         n_tokens = n_tokens + 1
                         i = j
@@ -104,6 +110,7 @@ contains
                             lex = trim(lex) // arr(start)
                             start = start + 1
                         end do
+
 
                         found_func = .false.
 
@@ -185,7 +192,8 @@ contains
         ! to print the lexems and kinds
         i = 1
         do while (i <= n_tokens)
-            write(*,'(A16, 2X, A16,2X,A16)') trim(arr_token(1,i)), trim(arr_token(2,i))
+            write(*,'(A,3X,A,2X,A,2X,A)') WHITE_BOLD, trim(arr_token(1,i)), RED_BOLD, trim(arr_token(2,i)), RESET
+
             i = i + 1
         end do 
 

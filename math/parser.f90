@@ -53,19 +53,20 @@ contains
         integer :: ntoks
 
         arr = string_to_array(this%equation, '')
+        
 
         call tokenize(arr, arr_token, ntoks)
         ! output of tokenize when the input will 4+3*5^2+6.5
         !  Index  Lexeme   Kind
-        !    1       4       N
-        !    2       +       A
-        !    3       3       N
-        !    4       *       M
-        !    5       5       N
-        !    6       ^       P
-        !    7       2       N
-        !    8       +       A
-        !    9     6.5       N
+        !    1       4       NUMERIC
+        !    2       +       ADD
+        !    3       3       NUMERIC
+        !    4       *       MUL
+        !    5       5       NUMERIC
+        !    6       ^       POW
+        !    7       2       NUMERIC
+        !    8       +       ADD
+        !    9     6.5       NUMERIC
         this%tok = arr_token
         this%ntoks = ntoks - 1
         this%pos = 1
@@ -85,7 +86,7 @@ contains
         ! tok(2,i) = kind
 
         ! the main value
-        type(Parser), intent(inout) :: p;
+        type(Parser), intent(inout) :: p
         type(ASTNode), pointer, intent(out):: root
         p%pos = 1
         root => parse_E(p)
