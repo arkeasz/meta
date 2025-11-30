@@ -22,12 +22,19 @@ fn index() -> Template {
     Template::render("index", HashMap::<String, f64>::new())
 }
 
+#[get("/")]
+fn calculator() -> Template {
+    Template::render("calc", HashMap::<String, f64>::new())
+}
+
 #[post("/", data = "<input>")]
 fn calculate(input: Form<CalculatorInput>, calc: &rocket::State<MetaLib>) -> Template {
     let lib = calc.calclib.lock().unwrap();
     unsafe {
         let calculator: Symbol<unsafe extern "C" fn(*const i8, *const i8, *mut f64)> =
-            lib.get(b"calculator\0").expect("No se encontró la función calculator en la DLL");
+            lib
+                .get(b"calculator\0")
+                .expect("DLL not found");
 
         let eq_c = CString::new(input.equation.clone()).unwrap();
         let vars_c = CString::new(input.variables.clone()).unwrap();
@@ -40,7 +47,7 @@ fn calculate(input: Form<CalculatorInput>, calc: &rocket::State<MetaLib>) -> Tem
         ctx.insert("variables".to_string(), input.variables.clone());
         ctx.insert("result".to_string(), format!("{}", result));
 
-        Template::render("index", &ctx)
+        Template::render("calc", &ctx)
     }
 }
 
@@ -67,7 +74,8 @@ fn rocket() -> _ {
 
     rocket::build()
         .manage(MetaLib { calclib: Mutex::new(calclib) })
-        .mount("/", routes![index, calculate])
+        .mount("/", routes![index])
+        .mount("/calc", routes![calculator, calculate])
         .mount("/docs", routes![docs, posts])
         .attach(Template::fairing())
 }

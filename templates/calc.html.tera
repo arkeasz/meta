@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Fortran Calculator</title>
+</head>
+<body>
+    <h1>Fortran Calculator</h1>
+    <form action="/calc" method="post">
+        <label for="equation">Equation:</label>
+        <input type="text" id="equation" name="equation" placeholder="x+y" required>
+        <br><br>
+
+        <label for="variables">Variables:</label>
+        <input type="text" id="variables" name="variables" placeholder="x=2;y=3" >
+        <br><br>
+
+        <button type="submit">Calculate</button>
+    </form>
+
+    {% if result %}
+    <hr>
+    <h2>Result</h2>
+    <p><strong>Equation:</strong> {{ equation }}</p>
+    <p><strong>Variables:</strong> {{ variables }}</p>
+    <p><strong>Result:</strong> {{ result }}</p>
+    {% endif %}
+</body>
+</html>
