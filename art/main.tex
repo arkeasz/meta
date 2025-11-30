@@ -1,0 +1,22 @@
+\documentclass[12pt]{article} 
+
+\input{preamble.tex} 
+
+\begin{document}
+    \input{cover.tex} 
+    % the final paper will have both  
+    % a technical abstract and a non-technical summary
+    \begin{abstract}
+        \input{abstract.tex}
+        \vspace{1in}
+        \begin{center}
+            \textbf{Summary}
+        \end{center}
+        \input{summary.tex}
+    \end{abstract}
+
+    \newpage
+
+    \input{paper.tex}
+\end{document}
+
